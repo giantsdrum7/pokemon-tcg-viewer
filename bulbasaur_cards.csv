@@ -1,0 +1,27 @@
+pokemon,card_id,image_url,set_name,release_date,price_usd
+bulbasaur,1,https://images.pokemontcg.io/det1/1.png,Detective Pikachu,4/5/2019,0.54
+bulbasaur,2,https://images.pokemontcg.io/bw5/1.png,Dark Explorers,5/9/2012,2.07
+bulbasaur,3,https://images.pokemontcg.io/sm35/1.png,Shining Legends,10/6/2017,0.44
+bulbasaur,4,https://images.pokemontcg.io/pop2/12.png,POP Series 2,8/1/2005,8.86
+bulbasaur,5,https://images.pokemontcg.io/gym2/39.png,Gym Challenge,10/16/2000,0
+bulbasaur,6,https://images.pokemontcg.io/ex4/39.png,Team Magma vs Team Aqua,3/1/2004,6.41
+bulbasaur,7,https://images.pokemontcg.io/base1/44.png,Base,1/9/1999,1.27
+bulbasaur,8,https://images.pokemontcg.io/ex14/45.png,Crystal Guardians,8/1/2006,3.72
+bulbasaur,9,https://images.pokemontcg.io/ex14/46.png,Crystal Guardians,8/1/2006,1.13
+bulbasaur,10,https://images.pokemontcg.io/ex6/54.png,FireRed & LeafGreen,9/1/2004,3.94
+bulbasaur,11,https://images.pokemontcg.io/ex6/55.png,FireRed & LeafGreen,9/1/2004,1.29
+bulbasaur,12,https://images.pokemontcg.io/base4/67.png,Base Set 2,2/24/2000,2.26
+bulbasaur,13,https://images.pokemontcg.io/dp3/77.png,Secret Wonders,11/1/2007,1.13
+bulbasaur,14,https://images.pokemontcg.io/base6/68.png,Legendary Collection,5/24/2002,2.22
+bulbasaur,15,https://images.pokemontcg.io/pl3/93.png,Supreme Victors,8/19/2009,1.59
+bulbasaur,16,https://images.pokemontcg.io/ecard1/94.png,Expedition Base Set,9/15/2002,8.22
+bulbasaur,17,https://images.pokemontcg.io/ecard1/95.png,Expedition Base Set,9/15/2002,17.01
+bulbasaur,18,https://images.pokemontcg.io/smp/SM198.png,SM Black Star Promos,2/3/2017,3.8
+bulbasaur,19,https://images.pokemontcg.io/mcd21/1.png,McDonald's Collection 2021,2/9/2021,0.52
+bulbasaur,20,https://images.pokemontcg.io/pgo/1.png,Pokémon GO,7/1/2022,0.09
+bulbasaur,21,https://images.pokemontcg.io/swshp/SWSH231.png,SWSH Black Star Promos,11/15/2019,3.51
+bulbasaur,22,https://images.pokemontcg.io/swshp/SWSH303.png,SWSH Black Star Promos,11/15/2019,25.63
+bulbasaur,23,https://images.pokemontcg.io/sv3pt5/1.png,151,9/22/2023,0.09
+bulbasaur,24,https://images.pokemontcg.io/sv3pt5/166.png,151,9/22/2023,34.08
+bulbasaur,25,https://images.pokemontcg.io/svp/46.png,Scarlet & Violet Black Star Promos,1/1/2023,0.46
+bulbasaur,26,https://images.pokemontcg.io/sv7/143.png,Stellar Crown,9/13/2024,46.02
