@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,3 +104,110 @@
   </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pokédex Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 1rem;
+    }
+    h1 {
+      text-align: center;
+    }
+    #search {
+      display: block;
+      margin: 1rem auto;
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 300px;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 1rem;
+      text-align: center;
+      width: 150px;
+    }
+    .card img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+    .card span {
+      display: block;
+      margin-top: 0.5rem;
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pokédex Viewer</h1>
+  <input type="text" id="search" placeholder="Search Pokémon...">
+  <div class="grid" id="pokedex"></div>
+
+  <script>
+    const S3_CSV_URL = "https://poke-num.s3.amazonaws.com/poke-num-with-images.csv";
+
+    async function loadCSV(url) {
+      const res = await fetch(url);
+      const text = await res.text();
+      const rows = text.trim().split('\n').slice(1);
+      return rows.map(row => {
+        const [dex, name, image] = row.split(',');
+        return { dex: dex.trim(), name: name.trim(), image: image.trim() };
+      });
+    }
+
+    function createCard(pokemon) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <a href="pokemon.html?name=${encodeURIComponent(pokemon.name)}">
+            <img src="${pokemon.image}" alt="${pokemon.name}">
+            <span>${pokemon.name}</span>
+         </a>
+     `;
+    return card;
+    }
+
+
+    async function displayPokedex() {
+      const pokedex = document.getElementById('pokedex');
+      const search = document.getElementById('search');
+      const data = await loadCSV(S3_CSV_URL);
+
+      function render(filter = "") {
+        pokedex.innerHTML = '';
+        data
+          .filter(p => {
+            const name = p.name.toLowerCase();
+            const query = filter.toLowerCase();
+            return name.startsWith(query) || name.includes(query);
+            })
+
+          .forEach(p => pokedex.appendChild(createCard(p)));
+      }
+
+      render();
+      search.addEventListener('input', e => render(e.target.value));
+    }
+
+    displayPokedex();
+  </script>
+</body>
+</html>
+>>>>>>> e303fb524b918e83401dbc8c737aeabd581c84cd
