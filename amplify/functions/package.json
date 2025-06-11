@@ -1,0 +1,9 @@
+{
+  "name": "updatepokemoncards",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.528.0",
+    "@aws-sdk/client-s3": "^3.528.0",
+    "csv-parse": "^5.5.4"
+  }
+}
