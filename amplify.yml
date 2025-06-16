@@ -3,8 +3,7 @@ backend:
   phases:
     build:
       commands:
-        - npm ci
-        - npm run amplify:build
+        - echo "✔️ Amplify Gen 2 backend will build automatically"
 frontend:
   phases:
     preBuild:
