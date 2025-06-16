@@ -4,18 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "amplify:build": "amplify backend build",
+    "amplify:build": "npx ampx backend build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "tsx": "^4.7.0",
     "@aws-amplify/backend": "^1.16.1",
     "@aws-amplify/backend-cli": "^1.7.2",
-    "@types/node": "^24.0.3",
-    "aws-cdk-lib": "^2.189.1",
-    "tsx": "^4.20.3"
+    "@types/node": "^18.0.0",
+    "aws-cdk-lib": "^2.189.1"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.828.0"
