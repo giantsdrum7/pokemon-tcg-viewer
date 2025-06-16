@@ -1,9 +1,10 @@
 {
   "name": "pokedex",
   "version": "1.0.0",
-  "description": "��#\u0000 \u0000p\u0000o\u0000k\u0000e\u0000m\u0000o\u0000n\u0000-\u0000t\u0000c\u0000g\u0000-\u0000v\u0000i\u0000e\u0000w\u0000e\u0000r\u0000\r\u0000 \u0000",
+  "description": "",
   "main": "index.js",
   "scripts": {
+    "amplify:build": "amplify backend build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,16 +13,6 @@
   "devDependencies": {
     "@aws-amplify/backend": "^1.16.1",
     "@aws-amplify/backend-cli": "^1.7.2",
-    "aws-cdk-lib": "^2.189.1",
-    "constructs": "^10.4.2",
-    "esbuild": "^0.25.5",
-    "tsx": "^4.20.1",
-    "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "@aws-amplify/backend-data": "^1.6.1",
-    "@aws-amplify/backend-function": "^1.14.1",
-    "@aws-amplify/backend-storage": "^1.4.1",
-    "aws-amplify": "^6.15.0"
+    "aws-cdk-lib": "^2.189.1"
   }
 }
