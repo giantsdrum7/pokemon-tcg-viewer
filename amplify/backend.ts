@@ -21,11 +21,20 @@ const backend = defineBackend({
     timeoutSeconds: 30,
   }),
 
-  // 🔹 REST API endpoint to trigger the Lambda
+  // 🔹 Lambda function to serve API queries (NEW)
+  getCards: lambda({
+    runtime: 'nodejs18.x',
+    entry: './functions/getCards/index.ts',
+  }),
+
+  // 🔹 REST API routes (updated to include /cards)
   api: api.rest({
     routes: {
       'GET /update-cards': {
         function: backend.updatePokemonCards,
+      },
+      'GET /cards': {
+        function: backend.getCards,
       },
     },
   }),
