@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "amplify:build": "npx ampx backend build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
