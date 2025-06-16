@@ -13,6 +13,10 @@
   "devDependencies": {
     "@aws-amplify/backend": "^1.16.1",
     "@aws-amplify/backend-cli": "^1.7.2",
+    "@types/node": "^24.0.3",
     "aws-cdk-lib": "^2.189.1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.828.0"
   }
 }

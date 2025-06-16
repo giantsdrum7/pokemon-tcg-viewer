@@ -1,4 +1,10 @@
 version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - npm ci
+        - npm run amplify:build
 frontend:
   phases:
     preBuild:
@@ -6,25 +12,11 @@ frontend:
         - npm ci
     build:
       commands:
-        - npm run build
+        - echo "Frontend build complete"
   artifacts:
     baseDirectory: public
     files:
       - '**/*'
   cache:
     paths:
-      - node_modules/**
-
-backend:
-  phases:
-    build:
-      commands:
-        - npm run amplify:build
-  artifacts:
-    baseDirectory: .amplify
-    files:
-      - '**/*'
-  cache:
-    paths:
-      - node_modules/**
-
+      - node_modules/**/*

@@ -1,32 +1,41 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { Readable } from "stream";
-import { parse } from "csv-parse";
+import { marshall } from "@aws-sdk/util-dynamodb";
 
-export const handler = async (): Promise<any> => {
-  const s3 = new S3Client({});
-  const ddb = new DynamoDBClient({});
-  const bucket = "poke-num";
-  const key = "cards.csv";
-  const tableName = process.env.TABLE_NAME!;
+const ddb = new DynamoDBClient({});
 
-  const response = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
-  const stream = response.Body as Readable;
+export const handler = async (event: any) => {
+  try {
+    const tableName = process.env.TABLE_NAME;
+    if (!tableName) throw new Error("Missing TABLE_NAME environment variable");
 
-  const parser = stream.pipe(parse({ columns: true, skip_empty_lines: true }));
+    const body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
 
-  for await (const record of parser) {
-    await ddb.send(new PutItemCommand({
-      TableName: tableName,
-      Item: Object.entries(record).reduce((acc, [key, val]) => {
-        acc[key] = { S: val };
-        return acc;
-      }, {} as Record<string, { S: string }>),
-    }));
+    const item = marshall({
+      id: body.id,
+      pokemon: body.pokemon,
+      set: body.set,
+      rarity: body.rarity,
+      market_price: body.market_price,
+      types: body.types,
+      subtypes: body.subtypes,
+    });
+
+    await ddb.send(
+      new PutItemCommand({
+        TableName: tableName,
+        Item: item,
+      })
+    );
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: "Card inserted/updated", id: body.id }),
+    };
+  } catch (error: any) {
+    console.error("Error in Lambda:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message }),
+    };
   }
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify("Success"),
-  };
 };
