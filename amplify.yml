@@ -1,9 +1,30 @@
 version: 1
-backend:
+frontend:
   phases:
     preBuild:
       commands:
         - npm ci
     build:
       commands:
-        - amplify pipeline-deploy --branch $AWS_BRANCH
+        - npm run build
+  artifacts:
+    baseDirectory: public
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**
+
+backend:
+  phases:
+    build:
+      commands:
+        - npm run amplify:build
+  artifacts:
+    baseDirectory: .amplify
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**
+
