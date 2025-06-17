@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,160 +54,48 @@
   <div class="grid" id="pokedex"></div>
 
   <script>
-    const S3_CSV_URL = "https://poke-num.s3.amazonaws.com/poke-num-with-images.csv";
+    const API_URL = "https://tdxklhwpj9.execute-api.us-east-2.amazonaws.com/prod/pokemon";
 
-    async function loadCSV(url) {
-      const res = await fetch(url);
-      const text = await res.text();
-      const rows = text.trim().split('\n').slice(1);
-      return rows.map(row => {
-        const [dex, name, image] = row.split(',');
-        return { dex: dex.trim(), name: name.trim(), image: image.trim() };
-      });
+    async function fetchPokemonCards(pokemon) {
+      try {
+        const response = await fetch(`${API_URL}?pokemon=${encodeURIComponent(pokemon)}`);
+        if (!response.ok) throw new Error("Failed to fetch");
+        return await response.json();
+      } catch (error) {
+        console.error("Fetch error:", error);
+        return [];
+      }
     }
 
     function createCard(pokemon) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-            <a href="pokemon.html?name=${encodeURIComponent(pokemon.name)}">
-            <img src="${pokemon.image}" alt="${pokemon.name}">
-            <span>${pokemon.name}</span>
-         </a>
-     `;
-    return card;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <a href="pokemon.html?name=${encodeURIComponent(pokemon.pokemon)}">
+          <img src="${pokemon.image_url}" alt="${pokemon.pokemon}">
+          <span>${pokemon.pokemon}</span>
+        </a>
+      `;
+      return card;
     }
 
-
     async function displayPokedex() {
+      const searchInput = document.getElementById('search');
       const pokedex = document.getElementById('pokedex');
-      const search = document.getElementById('search');
-      const data = await loadCSV(S3_CSV_URL);
 
-      function render(filter = "") {
+      async function render(query = '') {
         pokedex.innerHTML = '';
-        data
-          .filter(p => {
-            const name = p.name.toLowerCase();
-            const query = filter.toLowerCase();
-            return name.startsWith(query) || name.includes(query);
-            })
-
-          .forEach(p => pokedex.appendChild(createCard(p)));
+        if (query.length < 1) return;
+        const results = await fetchPokemonCards(query);
+        results.forEach(p => pokedex.appendChild(createCard(p)));
       }
 
-      render();
-      search.addEventListener('input', e => render(e.target.value));
+      searchInput.addEventListener('input', e => {
+        render(e.target.value.trim());
+      });
     }
 
     displayPokedex();
   </script>
 </body>
 </html>
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Pokédex Viewer</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
-      margin: 0;
-      padding: 1rem;
-    }
-    h1 {
-      text-align: center;
-    }
-    #search {
-      display: block;
-      margin: 1rem auto;
-      padding: 0.5rem;
-      font-size: 1rem;
-      width: 300px;
-    }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-    }
-    .card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 1rem;
-      text-align: center;
-      width: 150px;
-    }
-    .card img {
-      width: 100px;
-      height: 100px;
-      object-fit: contain;
-    }
-    .card span {
-      display: block;
-      margin-top: 0.5rem;
-      font-weight: bold;
-      text-transform: capitalize;
-    }
-  </style>
-</head>
-<body>
-  <h1>Pokédex Viewer</h1>
-  <input type="text" id="search" placeholder="Search Pokémon...">
-  <div class="grid" id="pokedex"></div>
-
-  <script>
-    const S3_CSV_URL = "https://poke-num.s3.amazonaws.com/poke-num-with-images.csv";
-
-    async function loadCSV(url) {
-      const res = await fetch(url);
-      const text = await res.text();
-      const rows = text.trim().split('\n').slice(1);
-      return rows.map(row => {
-        const [dex, name, image] = row.split(',');
-        return { dex: dex.trim(), name: name.trim(), image: image.trim() };
-      });
-    }
-
-    function createCard(pokemon) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-            <a href="pokemon.html?name=${encodeURIComponent(pokemon.name)}">
-            <img src="${pokemon.image}" alt="${pokemon.name}">
-            <span>${pokemon.name}</span>
-         </a>
-     `;
-    return card;
-    }
-
-
-    async function displayPokedex() {
-      const pokedex = document.getElementById('pokedex');
-      const search = document.getElementById('search');
-      const data = await loadCSV(S3_CSV_URL);
-
-      function render(filter = "") {
-        pokedex.innerHTML = '';
-        data
-          .filter(p => {
-            const name = p.name.toLowerCase();
-            const query = filter.toLowerCase();
-            return name.startsWith(query) || name.includes(query);
-            })
-
-          .forEach(p => pokedex.appendChild(createCard(p)));
-      }
-
-      render();
-      search.addEventListener('input', e => render(e.target.value));
-    }
-
-    displayPokedex();
-  </script>
-</body>
-</html>
->>>>>>> e303fb524b918e83401dbc8c737aeabd581c84cd
