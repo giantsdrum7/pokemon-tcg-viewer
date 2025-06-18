@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Pokédex Viewer (Debug)</title>
+  <title>Pokédex Viewer (Patched)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -74,7 +74,7 @@
 </head>
 <body>
 
-<h1>Pokédex Viewer (Debug)</h1>
+<h1>Pokédex Viewer (Patched)</h1>
 <input type="text" id="search" placeholder="Search Pokémon...">
 <div id="pokemon-container"></div>
 <p id="error-message">⚠️ No Pokémon found or failed to load.</p>
@@ -89,8 +89,11 @@
     console.log("🔄 Fetching generation:", gen);
     try {
       const res = await fetch(API_URL + "?generation=" + gen);
-      const data = await res.json();
-      console.log("✅ Data received:", data);
+      const raw = await res.json();
+      console.log("🧪 Raw response:", raw);
+      const data = JSON.parse(raw.body);
+      console.log("✅ Parsed Data:", data);
+
       if (!Array.isArray(data) || data.length === 0) {
         document.getElementById("error-message").style.display = "block";
         console.warn("⚠️ No Pokémon returned for generation:", gen);
