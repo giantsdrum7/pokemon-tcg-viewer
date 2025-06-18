@@ -88,19 +88,8 @@
 
 <script>
   const API_BASE = "https://tdxlxhwpj9.execute-api.us-east-2.amazonaws.com/prod/summary";
-  let allData = {};
+  const allData = {};
   let currentGen = 1;
-
-  async function loadAllGenerations() {
-    for (let gen = 1; gen <= 9; gen++) {
-      const res = await fetch(API_BASE + "?generation=" + gen);
-      const raw = await res.json();
-      const data = JSON.parse(raw.body);
-      allData[gen] = data;
-    }
-    renderGenTabs();
-    switchToGen(1);
-  }
 
   function renderGenTabs() {
     const tabContainer = document.getElementById("gen-tabs");
@@ -110,16 +99,22 @@
       btn.textContent = "Gen " + i;
       btn.className = "gen-btn";
       btn.dataset.gen = i;
-      btn.addEventListener("click", () => switchToGen(i));
+      btn.addEventListener("click", () => loadAndSwitchGen(i));
       tabContainer.appendChild(btn);
     }
   }
 
-  function switchToGen(gen) {
+  async function loadAndSwitchGen(gen) {
     currentGen = gen;
-    document.querySelectorAll(".gen-btn").forEach(btn => {
-      btn.classList.toggle("active", parseInt(btn.dataset.gen) === gen);
-    });
+    document.querySelectorAll(".gen-btn").forEach(btn =>
+      btn.classList.toggle("active", parseInt(btn.dataset.gen) === gen)
+    );
+    if (!allData[gen]) {
+      const res = await fetch(API_BASE + "?generation=" + gen);
+      const raw = await res.json();
+      const data = JSON.parse(raw.body);
+      allData[gen] = data;
+    }
     renderGrid(allData[gen]);
   }
 
@@ -140,36 +135,54 @@
       card.innerHTML = `
         <img src="${p.pokemon_image}" alt="${p.pokemon}" />
         <h3>${p.pokemon}</h3>
-        <p class="dex-num">#${p.dex_number.toString().padStart(3, '0')}</p>
+        <p class="dex-num">#${p.dex_number?.toString().padStart(3, '0') || ""}</p>
       `;
       grid.appendChild(card);
     });
   }
 
-  function findAndSwitchToPokemon(pokemonName) {
-    const lowerName = pokemonName.toLowerCase();
-    for (let gen in allData) {
-      const found = allData[gen].find(p => p.pokemon.toLowerCase() === lowerName);
-      if (found) {
-        switchToGen(parseInt(gen));
-        document.getElementById("search").value = pokemonName;
-        renderGrid(allData[gen]);
+  async function searchAllGenerations(term) {
+    const name = term.toLowerCase();
+    for (let gen = 1; gen <= 9; gen++) {
+      if (!allData[gen]) {
+        const res = await fetch(API_BASE + "?generation=" + gen);
+        const raw = await res.json();
+        allData[gen] = JSON.parse(raw.body);
+      }
+      const match = allData[gen].find(p => p.pokemon.toLowerCase() === name);
+      if (match) {
+        currentGen = gen;
+        renderGenTabs();
+        switchToGen(gen);
+        document.getElementById("search").value = match.pokemon;
         return;
       }
     }
     document.getElementById("error-message").style.display = "block";
   }
 
-  document.getElementById("search").addEventListener("input", (e) => {
+  function switchToGen(gen) {
+    document.querySelectorAll(".gen-btn").forEach(btn =>
+      btn.classList.toggle("active", parseInt(btn.dataset.gen) === gen)
+    );
+    renderGrid(allData[gen] || []);
+  }
+
+  document.getElementById("search").addEventListener("input", async (e) => {
     const val = e.target.value.trim();
     if (val.length >= 2) {
-      findAndSwitchToPokemon(val);
+      await searchAllGenerations(val);
     } else {
-      renderGrid(allData[currentGen]);
+      renderGrid(allData[currentGen] || []);
     }
   });
 
-  loadAllGenerations();
+  async function init() {
+    renderGenTabs();
+    await loadAndSwitchGen(1);
+  }
+
+  init();
 </script>
 
 </body>
