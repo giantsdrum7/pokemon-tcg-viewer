@@ -12,7 +12,7 @@ os.makedirs(archive_path, exist_ok=True)
 files_to_archive = [
     'populate_dynamodb.py',
     'populate_pokedex.py',
-    'populate_sets.py'
+    'populate_sets.py',
     'query_cards.py'
 ]
 
