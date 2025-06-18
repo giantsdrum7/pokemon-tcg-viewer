@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Pokédex Viewer (Patched)</title>
+  <title>Pokédex Viewer by Generation</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,15 +13,30 @@
     }
     h1 {
       text-align: center;
-      margin-bottom: 1rem;
     }
     #search {
       display: block;
-      margin: 0 auto 2rem auto;
+      margin: 1rem auto 2rem auto;
       padding: 0.5rem;
       font-size: 1rem;
       width: 300px;
       text-align: center;
+    }
+    #gen-tabs {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .gen-btn {
+      padding: 0.5rem 1rem;
+      margin: 0 0.25rem;
+      background-color: #eee;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .gen-btn.active {
+      background-color: #3b4cca;
+      color: white;
     }
     .pokemon-row {
       display: flex;
@@ -50,20 +65,6 @@
     .pokemon-info p {
       margin: 0.25rem 0;
     }
-    #load-more {
-      display: block;
-      margin: 2rem auto;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      background-color: #3b4cca;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    #load-more:hover {
-      background-color: #2a38a0;
-    }
     #error-message {
       text-align: center;
       color: red;
@@ -74,47 +75,62 @@
 </head>
 <body>
 
-<h1>Pokédex Viewer (Patched)</h1>
+<h1>Pokédex Viewer</h1>
+<div id="gen-tabs"></div>
 <input type="text" id="search" placeholder="Search Pokémon...">
 <div id="pokemon-container"></div>
 <p id="error-message">⚠️ No Pokémon found or failed to load.</p>
-<button id="load-more">Next Gen</button>
 
 <script>
-  const API_URL = "https://tdxlxhwpj9.execute-api.us-east-2.amazonaws.com/prod/summary";
+  const API_BASE = "https://tdxlxhwpj9.execute-api.us-east-2.amazonaws.com/prod/summary";
   let currentGen = 1;
-  let allLoadedPokemon = [];
+  let allPokemon = [];
+
+  function createGenTabs() {
+    const tabContainer = document.getElementById("gen-tabs");
+    for (let i = 1; i <= 9; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = "Gen " + i;
+      btn.className = "gen-btn";
+      btn.dataset.gen = i;
+      btn.addEventListener("click", () => loadGeneration(i));
+      tabContainer.appendChild(btn);
+    }
+  }
 
   async function loadGeneration(gen) {
-    console.log("🔄 Fetching generation:", gen);
+    currentGen = gen;
+    console.log("🔄 Loading Gen:", gen);
+    document.querySelectorAll(".gen-btn").forEach(b => {
+      b.classList.toggle("active", parseInt(b.dataset.gen) === gen);
+    });
     try {
-      const res = await fetch(API_URL + "?generation=" + gen);
+      const res = await fetch(API_BASE + "?generation=" + gen);
       const raw = await res.json();
-      console.log("🧪 Raw response:", raw);
       const data = JSON.parse(raw.body);
-      console.log("✅ Parsed Data:", data);
-
-      if (!Array.isArray(data) || data.length === 0) {
-        document.getElementById("error-message").style.display = "block";
-        console.warn("⚠️ No Pokémon returned for generation:", gen);
-      } else {
-        document.getElementById("error-message").style.display = "none";
-        allLoadedPokemon = allLoadedPokemon.concat(data);
-        renderPokemon(allLoadedPokemon);
-      }
-    } catch (err) {
-      console.error("❌ Error fetching generation", gen, err);
+      allPokemon = data;
+      renderPokemon();
+    } catch (e) {
+      console.error("❌ Failed to load Gen", gen, e);
       document.getElementById("error-message").style.display = "block";
     }
   }
 
-  function renderPokemon(data) {
+  function renderPokemon() {
     const container = document.getElementById("pokemon-container");
+    const search = document.getElementById("search").value.toLowerCase();
     container.innerHTML = "";
-    const query = document.getElementById("search").value.toLowerCase();
 
-    const filtered = data.filter(p => p.pokemon && p.pokemon.toLowerCase().includes(query));
-    console.log(`🔍 Rendering ${filtered.length} of ${data.length} Pokémon (filtered)`);
+    const filtered = allPokemon.filter(p =>
+      p.pokemon && p.pokemon.toLowerCase().includes(search)
+    );
+
+    if (filtered.length === 0) {
+      document.getElementById("error-message").style.display = "block";
+      return;
+    } else {
+      document.getElementById("error-message").style.display = "none";
+    }
 
     filtered.forEach(p => {
       const row = document.createElement("div");
@@ -123,7 +139,7 @@
         <img src="${p.pokemon_image}" alt="${p.pokemon}" />
         <div class="pokemon-info">
           <h2>${p.pokemon}</h2>
-          <p><strong>${p.card_count}</strong> cards</p>
+          <p>${p.card_count} cards</p>
           <p>Top Card Price: $${parseFloat(p.market_price).toFixed(2)}</p>
           <img src="${p.top_card_image}" alt="Top card of ${p.pokemon}" />
         </div>
@@ -132,16 +148,8 @@
     });
   }
 
-  document.getElementById("load-more").addEventListener("click", () => {
-    currentGen++;
-    loadGeneration(currentGen);
-  });
-
-  document.getElementById("search").addEventListener("input", () => {
-    renderPokemon(allLoadedPokemon);
-  });
-
-  // Load Gen 1 on startup
+  document.getElementById("search").addEventListener("input", renderPokemon);
+  createGenTabs();
   loadGeneration(currentGen);
 </script>
 
