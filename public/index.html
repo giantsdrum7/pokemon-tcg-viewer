@@ -2,100 +2,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Pokédex Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
       margin: 0;
-      padding: 1rem;
+      padding: 2rem;
+      background-color: #f8f8f8;
     }
     h1 {
       text-align: center;
+      margin-bottom: 1rem;
     }
     #search {
       display: block;
-      margin: 1rem auto;
+      margin: 0 auto 2rem auto;
       padding: 0.5rem;
       font-size: 1rem;
       width: 300px;
-    }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-    }
-    .card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 1rem;
       text-align: center;
-      width: 150px;
     }
-    .card img {
+    .pokemon-row {
+      display: flex;
+      align-items: center;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin: 1rem auto;
+      padding: 1rem;
+      max-width: 800px;
+    }
+    .pokemon-row img {
       width: 100px;
-      height: 100px;
-      object-fit: contain;
+      height: auto;
+      border-radius: 8px;
+      margin-right: 1rem;
     }
-    .card span {
+    .pokemon-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .pokemon-info h2 {
+      margin: 0 0 0.25rem 0;
+    }
+    .pokemon-info p {
+      margin: 0.25rem 0;
+    }
+    #load-more {
       display: block;
-      margin-top: 0.5rem;
-      font-weight: bold;
-      text-transform: capitalize;
+      margin: 2rem auto;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      background-color: #3b4cca;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #load-more:hover {
+      background-color: #2a38a0;
+    }
+    #error-message {
+      text-align: center;
+      color: red;
+      margin-top: 2rem;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>Pokédex Viewer</h1>
-  <input type="text" id="search" placeholder="Search Pokémon...">
-  <div class="grid" id="pokedex"></div>
 
-  <script>
-    const API_URL = "https://tdxklhwpj9.execute-api.us-east-2.amazonaws.com/prod/pokemon";
+<h1>Pokédex Viewer</h1>
+<input type="text" id="search" placeholder="Search Pokémon...">
+<div id="pokemon-container"></div>
+<p id="error-message">⚠️ No Pokémon found or failed to load.</p>
+<button id="load-more">Next Gen</button>
 
-    async function fetchPokemonCards(pokemon) {
-      try {
-        const response = await fetch(`${API_URL}?pokemon=${encodeURIComponent(pokemon)}`);
-        if (!response.ok) throw new Error("Failed to fetch");
-        return await response.json();
-      } catch (error) {
-        console.error("Fetch error:", error);
-        return [];
-      }
+<script>
+  const API_URL = "https://tdxklhwpj9.execute-api.us-east-2.amazonaws.com/prod/summary";
+  let currentGen = 1;
+  let allLoadedPokemon = [];
+
+  async function loadGeneration(gen) {
+    console.log("🔍 Loading generation:", gen);
+    const res = await fetch(API_URL + "?generation=" + gen);
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      document.getElementById("error-message").style.display = "block";
+    } else {
+      document.getElementById("error-message").style.display = "none";
+      allLoadedPokemon = allLoadedPokemon.concat(data);
+      renderPokemon(allLoadedPokemon);
     }
+  }
 
-    function createCard(pokemon) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <a href="pokemon.html?name=${encodeURIComponent(pokemon.pokemon)}">
-          <img src="${pokemon.image_url}" alt="${pokemon.pokemon}">
-          <span>${pokemon.pokemon}</span>
-        </a>
-      `;
-      return card;
-    }
+  function renderPokemon(data) {
+    const container = document.getElementById("pokemon-container");
+    container.innerHTML = "";
+    const query = document.getElementById("search").value.toLowerCase();
 
-    async function displayPokedex() {
-      const searchInput = document.getElementById('search');
-      const pokedex = document.getElementById('pokedex');
-
-      async function render(query = '') {
-        pokedex.innerHTML = '';
-        if (query.length < 1) return;
-        const results = await fetchPokemonCards(query);
-        results.forEach(p => pokedex.appendChild(createCard(p)));
-      }
-
-      searchInput.addEventListener('input', e => {
-        render(e.target.value.trim());
+    data
+      .filter(p => p.pokemon.toLowerCase().includes(query))
+      .forEach(p => {
+        const row = document.createElement("div");
+        row.className = "pokemon-row";
+        row.innerHTML = `
+          <img src="${p.pokemon_image}" alt="${p.pokemon}" />
+          <div class="pokemon-info">
+            <h2>${p.pokemon}</h2>
+            <p><strong>${p.card_count}</strong> cards</p>
+            <p>Top Card Price: $${p.market_price.toFixed(2)}</p>
+            <img src="${p.top_card_image}" alt="Top card of ${p.pokemon}" />
+          </div>
+        `;
+        container.appendChild(row);
       });
-    }
+  }
 
-    displayPokedex();
-  </script>
+  document.getElementById("load-more").addEventListener("click", () => {
+    currentGen++;
+    loadGeneration(currentGen);
+  });
+
+  document.getElementById("search").addEventListener("input", () => {
+    renderPokemon(allLoadedPokemon);
+  });
+
+  loadGeneration(currentGen); // Start with Gen 1
+</script>
+
 </body>
 </html>
