@@ -3,24 +3,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Pokédex Viewer by Generation</title>
+  <title>Pokédex Viewer</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
+      background-color: #1e1f26;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
       padding: 2rem;
-      background-color: #f8f8f8;
+      margin: 0;
     }
     h1 {
       text-align: center;
-    }
-    #search {
-      display: block;
-      margin: 1rem auto 2rem auto;
-      padding: 0.5rem;
-      font-size: 1rem;
-      width: 300px;
-      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 2.5rem;
     }
     #gen-tabs {
       text-align: center;
@@ -28,47 +23,57 @@
     }
     .gen-btn {
       padding: 0.5rem 1rem;
-      margin: 0 0.25rem;
-      background-color: #eee;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      margin: 0.25rem;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
     }
     .gen-btn.active {
-      background-color: #3b4cca;
-      color: white;
+      background-color: gold;
+      color: black;
     }
-    .pokemon-row {
-      display: flex;
-      align-items: center;
-      background-color: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin: 1rem auto;
-      padding: 1rem;
-      max-width: 800px;
-    }
-    .pokemon-row img {
-      width: 100px;
-      height: auto;
+    #search {
+      display: block;
+      margin: 0 auto 2rem auto;
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 300px;
       border-radius: 8px;
-      margin-right: 1rem;
+      border: none;
+      text-align: center;
     }
-    .pokemon-info {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+    #pokemon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
     }
-    .pokemon-info h2 {
-      margin: 0 0 0.25rem 0;
+    .card {
+      background-color: #2a2b38;
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease;
     }
-    .pokemon-info p {
-      margin: 0.25rem 0;
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .card img {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      margin-bottom: 0.5rem;
+    }
+    .dex-num {
+      color: #ccc;
+      font-size: 0.85rem;
     }
     #error-message {
       text-align: center;
       color: red;
-      margin-top: 2rem;
       display: none;
     }
   </style>
@@ -78,79 +83,93 @@
 <h1>Pokédex Viewer</h1>
 <div id="gen-tabs"></div>
 <input type="text" id="search" placeholder="Search Pokémon...">
-<div id="pokemon-container"></div>
-<p id="error-message">⚠️ No Pokémon found or failed to load.</p>
+<div id="pokemon-grid"></div>
+<p id="error-message">⚠️ No matching Pokémon found.</p>
 
 <script>
   const API_BASE = "https://tdxlxhwpj9.execute-api.us-east-2.amazonaws.com/prod/summary";
+  let allData = {};
   let currentGen = 1;
-  let allPokemon = [];
 
-  function createGenTabs() {
+  async function loadAllGenerations() {
+    for (let gen = 1; gen <= 9; gen++) {
+      const res = await fetch(API_BASE + "?generation=" + gen);
+      const raw = await res.json();
+      const data = JSON.parse(raw.body);
+      allData[gen] = data;
+    }
+    renderGenTabs();
+    switchToGen(1);
+  }
+
+  function renderGenTabs() {
     const tabContainer = document.getElementById("gen-tabs");
+    tabContainer.innerHTML = "";
     for (let i = 1; i <= 9; i++) {
       const btn = document.createElement("button");
       btn.textContent = "Gen " + i;
       btn.className = "gen-btn";
       btn.dataset.gen = i;
-      btn.addEventListener("click", () => loadGeneration(i));
+      btn.addEventListener("click", () => switchToGen(i));
       tabContainer.appendChild(btn);
     }
   }
 
-  async function loadGeneration(gen) {
+  function switchToGen(gen) {
     currentGen = gen;
-    console.log("🔄 Loading Gen:", gen);
-    document.querySelectorAll(".gen-btn").forEach(b => {
-      b.classList.toggle("active", parseInt(b.dataset.gen) === gen);
+    document.querySelectorAll(".gen-btn").forEach(btn => {
+      btn.classList.toggle("active", parseInt(btn.dataset.gen) === gen);
     });
-    try {
-      const res = await fetch(API_BASE + "?generation=" + gen);
-      const raw = await res.json();
-      const data = JSON.parse(raw.body);
-      allPokemon = data;
-      renderPokemon();
-    } catch (e) {
-      console.error("❌ Failed to load Gen", gen, e);
-      document.getElementById("error-message").style.display = "block";
-    }
+    renderGrid(allData[gen]);
   }
 
-  function renderPokemon() {
-    const container = document.getElementById("pokemon-container");
+  function renderGrid(pokemonList) {
+    const grid = document.getElementById("pokemon-grid");
     const search = document.getElementById("search").value.toLowerCase();
-    container.innerHTML = "";
+    grid.innerHTML = "";
 
-    const filtered = allPokemon.filter(p =>
+    const filtered = pokemonList.filter(p =>
       p.pokemon && p.pokemon.toLowerCase().includes(search)
     );
 
-    if (filtered.length === 0) {
-      document.getElementById("error-message").style.display = "block";
-      return;
-    } else {
-      document.getElementById("error-message").style.display = "none";
-    }
+    document.getElementById("error-message").style.display = filtered.length ? "none" : "block";
 
     filtered.forEach(p => {
-      const row = document.createElement("div");
-      row.className = "pokemon-row";
-      row.innerHTML = `
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
         <img src="${p.pokemon_image}" alt="${p.pokemon}" />
-        <div class="pokemon-info">
-          <h2>${p.pokemon}</h2>
-          <p>${p.card_count} cards</p>
-          <p>Top Card Price: $${parseFloat(p.market_price).toFixed(2)}</p>
-          <img src="${p.top_card_image}" alt="Top card of ${p.pokemon}" />
-        </div>
+        <h3>${p.pokemon}</h3>
+        <p class="dex-num">#${p.dex_number.toString().padStart(3, '0')}</p>
       `;
-      container.appendChild(row);
+      grid.appendChild(card);
     });
   }
 
-  document.getElementById("search").addEventListener("input", renderPokemon);
-  createGenTabs();
-  loadGeneration(currentGen);
+  function findAndSwitchToPokemon(pokemonName) {
+    const lowerName = pokemonName.toLowerCase();
+    for (let gen in allData) {
+      const found = allData[gen].find(p => p.pokemon.toLowerCase() === lowerName);
+      if (found) {
+        switchToGen(parseInt(gen));
+        document.getElementById("search").value = pokemonName;
+        renderGrid(allData[gen]);
+        return;
+      }
+    }
+    document.getElementById("error-message").style.display = "block";
+  }
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    const val = e.target.value.trim();
+    if (val.length >= 2) {
+      findAndSwitchToPokemon(val);
+    } else {
+      renderGrid(allData[currentGen]);
+    }
+  });
+
+  loadAllGenerations();
 </script>
 
 </body>
