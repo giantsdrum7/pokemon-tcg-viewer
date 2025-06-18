@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Pokédex Viewer</title>
+  <title>Pokédex Viewer (Debug)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -74,7 +74,7 @@
 </head>
 <body>
 
-<h1>Pokédex Viewer</h1>
+<h1>Pokédex Viewer (Debug)</h1>
 <input type="text" id="search" placeholder="Search Pokémon...">
 <div id="pokemon-container"></div>
 <p id="error-message">⚠️ No Pokémon found or failed to load.</p>
@@ -86,15 +86,22 @@
   let allLoadedPokemon = [];
 
   async function loadGeneration(gen) {
-    console.log("🔍 Loading generation:", gen);
-    const res = await fetch(API_URL + "?generation=" + gen);
-    const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) {
+    console.log("🔄 Fetching generation:", gen);
+    try {
+      const res = await fetch(API_URL + "?generation=" + gen);
+      const data = await res.json();
+      console.log("✅ Data received:", data);
+      if (!Array.isArray(data) || data.length === 0) {
+        document.getElementById("error-message").style.display = "block";
+        console.warn("⚠️ No Pokémon returned for generation:", gen);
+      } else {
+        document.getElementById("error-message").style.display = "none";
+        allLoadedPokemon = allLoadedPokemon.concat(data);
+        renderPokemon(allLoadedPokemon);
+      }
+    } catch (err) {
+      console.error("❌ Error fetching generation", gen, err);
       document.getElementById("error-message").style.display = "block";
-    } else {
-      document.getElementById("error-message").style.display = "none";
-      allLoadedPokemon = allLoadedPokemon.concat(data);
-      renderPokemon(allLoadedPokemon);
     }
   }
 
@@ -103,22 +110,23 @@
     container.innerHTML = "";
     const query = document.getElementById("search").value.toLowerCase();
 
-    data
-      .filter(p => p.pokemon.toLowerCase().includes(query))
-      .forEach(p => {
-        const row = document.createElement("div");
-        row.className = "pokemon-row";
-        row.innerHTML = `
-          <img src="${p.pokemon_image}" alt="${p.pokemon}" />
-          <div class="pokemon-info">
-            <h2>${p.pokemon}</h2>
-            <p><strong>${p.card_count}</strong> cards</p>
-            <p>Top Card Price: $${p.market_price.toFixed(2)}</p>
-            <img src="${p.top_card_image}" alt="Top card of ${p.pokemon}" />
-          </div>
-        `;
-        container.appendChild(row);
-      });
+    const filtered = data.filter(p => p.pokemon && p.pokemon.toLowerCase().includes(query));
+    console.log(`🔍 Rendering ${filtered.length} of ${data.length} Pokémon (filtered)`);
+
+    filtered.forEach(p => {
+      const row = document.createElement("div");
+      row.className = "pokemon-row";
+      row.innerHTML = `
+        <img src="${p.pokemon_image}" alt="${p.pokemon}" />
+        <div class="pokemon-info">
+          <h2>${p.pokemon}</h2>
+          <p><strong>${p.card_count}</strong> cards</p>
+          <p>Top Card Price: $${parseFloat(p.market_price).toFixed(2)}</p>
+          <img src="${p.top_card_image}" alt="Top card of ${p.pokemon}" />
+        </div>
+      `;
+      container.appendChild(row);
+    });
   }
 
   document.getElementById("load-more").addEventListener("click", () => {
@@ -130,7 +138,8 @@
     renderPokemon(allLoadedPokemon);
   });
 
-  loadGeneration(currentGen); // Start with Gen 1
+  // Load Gen 1 on startup
+  loadGeneration(currentGen);
 </script>
 
 </body>
