@@ -1,0 +1,46 @@
+API Key: 37816893-cb51-4a0c-9d99-d5b49d65bffa
+
+accountId: fantasycoaching
+emailaddress: fantasycoaching@idi-net.com
+tBs9GMVHZ5fDLKm
+
+
+aws.amazon.com
+
+git remote set-url origin https://github.com/giantsdrum7/pokemon-tcg-viewer.git
+
+git clone https://github.com/giantsdrum7/pokemon-tcg-viewer.git
+cd pokemon-tcg-viewer
+
+
+📁 Project: Pokemon TCG Viewer Web App
+
+🎯 Main Goal:
+Migrate a working S3 prototype to a fully-deployed, GitHub-linked, Amplify Gen 2 app using:
+- DynamoDB
+- Lambda (data sync)
+- API Gateway (frontend-backend bridge)
+- S3 (CSV backup)
+- CloudWatch (logs + metrics)
+
+🧠 Context:
+- Gen 2 setup is complete and connected to GitHub
+- Latest successful Amplify deployment detected Gen 2
+- Repo is pokemon-tcg-viewer, hosted on GitHub and Amplify
+- Lambda Python code needs to be converted to TypeScript
+- File structure includes `lambda/`, `public/`, `archive/`, and new `amplify/`
+
+🪜 Current 5-Step Plan:
+1. ✅ Clean + restructure file system ✅
+2. ✅ Upgrade to Amplify Gen 2 with GitHub-based deployment ✅
+3. 🔄 Define backend in `amplify/backend.ts` (DynamoDB + Lambda + API Gateway)
+4. 🛠 Build API routes + test Lambda-DynamoDB sync
+5. 📊 Integrate CloudWatch and finalize production deployment
+
+📌 Next task: Convert `lambda_function.py` to `lambda_function.ts` and define `backend.ts`
+
+
+
+
+Move-Item "amplify.yml" "PokeDex\"
+

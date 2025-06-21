@@ -11,137 +11,81 @@
       margin: 0;
       padding: 1rem;
     }
-
-    h1 {
-      text-align: center;
-    }
-
     .gen-buttons {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      gap: 0.5rem;
       margin-bottom: 1rem;
     }
-
-    .gen-buttons button {
-      margin: 0.25rem;
-      padding: 0.5rem 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-      background-color: #1976d2;
-      color: white;
-      border-radius: 6px;
-    }
-
-    .gen-buttons button.active {
-      background-color: #0d47a1;
-    }
-
     .pokedex {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 1rem;
     }
-
     .pokemon-card {
-      background-color: white;
+      background: white;
       border-radius: 8px;
-      padding: 0.5rem;
-      text-align: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: transform 0.2s ease;
+      padding: 1rem;
+      text-align: center;
     }
-
-    .pokemon-card:hover {
-      transform: scale(1.05);
-    }
-
     .pokemon-card img {
-      width: 100px;
-      height: 100px;
+      width: 96px;
+      height: 96px;
       object-fit: contain;
-    }
-
-    .name {
-      font-weight: bold;
-      margin-top: 0.5rem;
-    }
-
-    .dex-number {
-      font-size: 0.85rem;
-      color: #666;
     }
   </style>
 </head>
 <body>
   <h1>Pokédex Viewer</h1>
-
   <div class="gen-buttons" id="genButtons"></div>
-
-  <div class="pokedex" id="pokedexContainer">
-    <!-- Pokémon cards will be injected here -->
-  </div>
+  <div class="pokedex" id="pokedexContainer"></div>
 
   <script>
-    const API_URL = 'https://c4wluvfcpi.execute-api.us-east-2.amazonaws.com/prod'; // Replace this
+    const API_BASE = 'https://cs0wcu51w8.execute-api.us-east-2.amazonaws.com/prod/pokedex';
 
     let allPokemon = [];
-    let currentGen = 1;
 
     async function fetchPokedex() {
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch(API_BASE);
+        if (!res.ok) throw new Error('API request failed');
         const data = await res.json();
         allPokemon = data;
+        renderGen(1);
         renderGenButtons();
-        renderPokemonByGen(currentGen);
       } catch (err) {
-        console.error("Failed to fetch pokedex:", err);
+        console.error('Failed to fetch pokedex:', err);
       }
     }
 
     function renderGenButtons() {
-      const genButtons = document.getElementById("genButtons");
-      genButtons.innerHTML = '';
-      for (let i = 1; i <= 9; i++) {
-        const btn = document.createElement("button");
-        btn.innerText = `Gen ${i}`;
-        if (i === currentGen) btn.classList.add("active");
-        btn.onclick = () => {
-          currentGen = i;
-          document.querySelectorAll('.gen-buttons button').forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-          renderPokemonByGen(i);
-        };
-        genButtons.appendChild(btn);
-      }
+      const gens = [...new Set(allPokemon.map(p => p.gen))].sort((a, b) => a - b);
+      const btnContainer = document.getElementById('genButtons');
+      btnContainer.innerHTML = '';
+      gens.forEach(gen => {
+        const btn = document.createElement('button');
+        btn.textContent = `Gen ${gen}`;
+        btn.onclick = () => renderGen(gen);
+        btnContainer.appendChild(btn);
+      });
     }
 
-    function renderPokemonByGen(gen) {
-      const container = document.getElementById("pokedexContainer");
+    function renderGen(gen) {
+      const container = document.getElementById('pokedexContainer');
       container.innerHTML = '';
-      const filtered = allPokemon.filter(p => Number(p.gen) === gen);
-      filtered.sort((a, b) => a.dex_number - b.dex_number);
-      for (const pkmn of filtered) {
-        const card = document.createElement("div");
-        card.className = "pokemon-card";
-        card.onclick = () => {
-          window.location.href = `pokemon.html?pokemon=${encodeURIComponent(pkmn.pokemon)}`;
-        };
-
+      const genPokemon = allPokemon.filter(p => p.gen === gen);
+      genPokemon.forEach(poke => {
+        const card = document.createElement('div');
+        card.className = 'pokemon-card';
         card.innerHTML = `
-          <img src="${pkmn.pokemon_image}" alt="${pkmn.pokemon}" />
-          <div class="name">${pkmn.pokemon}</div>
-          <div class="dex-number">#${pkmn.dex_number}</div>
+          <h3>#${poke.dex_number} ${poke.pokemon}</h3>
+          <img src="${poke.pokemon_image}" alt="${poke.pokemon}" />
         `;
-
         container.appendChild(card);
-      }
+      });
     }
 
-    window.onload = fetchPokedex;
+    fetchPokedex();
   </script>
 </body>
 </html>

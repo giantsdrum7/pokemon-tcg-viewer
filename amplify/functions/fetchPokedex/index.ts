@@ -1,41 +1,74 @@
-import {
-  DynamoDBClient,
-  ScanCommand,
-} from '@aws-sdk/client-dynamodb';
-import { unmarshall } from '@aws-sdk/util-dynamodb';
-import { APIGatewayProxyHandler } from 'aws-lambda';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokédex Viewer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f3f3f3;
+      margin: 0;
+      padding: 1rem;
+    }
+    .gen-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .pokedex {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .pokemon-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 1rem;
+      text-align: center;
+    }
+    .pokemon-card img {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pokédex Viewer</h1>
+  <div class="gen-buttons" id="genButtons"></div>
+  <div class="pokedex" id="pokedexContainer"></div>
 
-const client = new DynamoDBClient({ region: 'us-east-2' });
+  <script>
+    const API_BASE = 'https://b526yrmx5k.execute-api.us-east-2.amazonaws.com/prod/pokedex';
 
-export const handler: APIGatewayProxyHandler = async (event) => {
-  try {
-    const command = new ScanCommand({
-      TableName: 'Pokedex',
-      FilterExpression: '#type = :typeVal',
-      ExpressionAttributeNames: {
-        '#type': 'cardtype',
-      },
-      ExpressionAttributeValues: {
-        ':typeVal': { S: 'pokemon' },
-      },
-    });
+    let allPokemon = [];
 
-    const result = await client.send(command);
-    const items = result.Items?.map((item) => unmarshall(item)) || [];
+    async function fetchPokedex() {
+      try {
+        const res = await fetch(API_BASE);
+        if (!res.ok) throw new Error('API request failed');
+        const data = await res.json();
+        allPokemon = data;
+        renderGen(1);
+        renderGenButtons();
+      } catch (err) {
+        console.error('Failed to fetch pokedex:', err);
+      }
+    }
 
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      body: JSON.stringify(items),
-    };
-  } catch (error) {
-    console.error('Error scanning Pokedex table:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to fetch pokedex data.' }),
-    };
-  }
-};
+    function renderGenButtons() {
+      const gens = [...new Set(allPokemon.map(p => p.gen))].sort((a, b) => a - b);
+      const btnContainer = document.getElementById('genButtons');
+      btnContainer.innerHTML = '';
+      gens.forEach(gen => {
+        const btn = document.createElement('button');
+        btn.textContent = `Gen ${gen}`;
+        btn.onclick = () => renderGen(gen);
+        btnContainer.appendChild(btn);
+      });
+    }
+
+    function renderGen(gen) {
+      const container = document.getElementById('pokedexConta

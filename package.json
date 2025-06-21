@@ -10,13 +10,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "tsx": "^4.7.0",
     "@aws-amplify/backend": "^1.16.1",
     "@aws-amplify/backend-cli": "^1.7.2",
     "@types/node": "^18.0.0",
-    "aws-cdk-lib": "^2.189.1"
+    "aws-cdk-lib": "^2.189.1",
+    "tsx": "^4.7.0"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.828.0"
+    "@aws-sdk/client-dynamodb": "^3.830.0",
+    "@aws-sdk/util-dynamodb": "^3.830.0"
   }
 }
