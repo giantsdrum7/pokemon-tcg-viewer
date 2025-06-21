@@ -1,9 +1,10 @@
-import { defineFunction } from '@aws-amplify/backend';
+import { function as defineFunction } from '@aws-amplify/backend/function';
 
 export const updatePokemonCards = defineFunction({
-  entry: './amplify/functions/updatePokemonCards/index.ts',
+  name: 'fetchPokedex',
+  entry: './index.ts',
   runtime: 'nodejs18.x',
-  environment: {
-    TABLE_NAME: 'Pokedex',
+  permissions: {
+    'dynamodb:*': ['*'],
   },
 });
